@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${FORWARD_PORT:-8008}:${PORT:-80}'
+      - '${DEBUG_PORT:-5354}:${DEBUG_PORT:-5354}'
+    volumes:
+      - '.:/app/'
+    env_file:
+      - .env
+    command: python main.py
+    networks:
+      - app
+    depends_on:
+      - db
+  
+  db:
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASS:-}'
+      MYSQL_PASSWORD: '${DB_PASS:-}'
+      MYSQL_USER: '${DB_USER:-root}'
+      MYSQL_ALLOW_EMPTY_PASSWORD: yes 
+    ports:
+      - '${DB_PORT:-3306}:${DB_PORT:-3306}'
+    volumes:
+      - 'mariadb_data:/var/mariadb/data'
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  mariadb_data: {}
